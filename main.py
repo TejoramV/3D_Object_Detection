@@ -6,7 +6,7 @@ import itertools
 import trimesh
 
 
-
+object_file = "scissors.obj"
 width=720 # imported from camera file
 height=540
 fx=1342.1932049569116
@@ -17,7 +17,7 @@ cy=269.5
 render = o3d.visualization.rendering.OffscreenRenderer(width, height)
 mesh = o3d.geometry.TriangleMesh.create_coordinate_frame()
 material = o3d.visualization.rendering.MaterialRecord()  
-mesh_s = o3d.io.read_triangle_mesh("/home/weirdlab/Downloads/open/scissors.obj")
+mesh_s = o3d.io.read_triangle_mesh(object_file)
 render.scene.set_background([0.1, 0.2, 0.3, 1.0]) 
 render.scene.set_lighting(render.scene.LightingProfile.NO_SHADOWS, (0, 0, 0))
 
@@ -41,15 +41,10 @@ mesh_tx.rotate(mesh.get_rotation_matrix_from_xyz((x0,y0,z0)))
 render.scene.add_geometry("model", mesh_tx, material)
 
 
-print(f'Center of mesh: {mesh_s.get_center()}')
-print(f'Center of translated mesh: {mesh_tx.get_center()}')
-print(f'x0, y0, z0: {x0, y0, z0}')
-print(f't1, t2, t3: {t1, t2, t3}')
-
 #Translate and rotate the bounding box
 
 R = mesh.get_rotation_matrix_from_xyz((x0,y0,z0))
-obj_mesh = trimesh.load_mesh(f'/home/weirdlab/Downloads/open/scissors.obj')
+obj_mesh = trimesh.load_mesh(object_file)
 bb_min_xyz = obj_mesh.bounds[0].copy()
 bb_max_xyz = obj_mesh.bounds[1].copy()
 
@@ -96,39 +91,40 @@ for i in range(8):
 
 #adding bounding box to image
 
+def image_with_bb(corners,material):
 
-lines = [
-[0, 1],
-[0, 2],
-[1, 3],
-[2, 3],
-[4, 5],
-[4, 6],
-[5, 7],
-[6, 7],
-[0, 4],
-[1, 5],
-[2, 6],
-[3, 7],
-]
+    lines = [
+    [0, 1],
+    [0, 2],
+    [1, 3],
+    [2, 3],
+    [4, 5],
+    [4, 6],
+    [5, 7],
+    [6, 7],
+    [0, 4],
+    [1, 5],
+    [2, 6],
+    [3, 7],
+    ]
+
+    colors = [[1, 0, 0] for i in range(len(lines))]
+    line_set = o3d.geometry.LineSet(
+    points=o3d.utility.Vector3dVector(corners),
+    lines=o3d.utility.Vector2iVector(lines),
+    )
+    line_set.colors = o3d.utility.Vector3dVector(colors)
+
+    point_cloud2 = o3d.geometry.PointCloud()
+    point_cloud2.points = o3d.utility.Vector3dVector(corners)
+    point_cloud2.paint_uniform_color([0, 1, 0])
+
+    render.scene.add_geometry("bb_p", point_cloud2, material)
+    render.scene.add_geometry("bb_l", line_set, material)
 
 
-colors = [[1, 0, 0] for i in range(len(lines))]
-line_set = o3d.geometry.LineSet(
-points=o3d.utility.Vector3dVector(corners),
-lines=o3d.utility.Vector2iVector(lines),
-)
-line_set.colors = o3d.utility.Vector3dVector(colors)
 
-point_cloud2 = o3d.geometry.PointCloud()
-point_cloud2.points = o3d.utility.Vector3dVector(corners)
-point_cloud2.paint_uniform_color([0, 1, 0])
-
-render.scene.add_geometry("bb_p", point_cloud2, material)
-render.scene.add_geometry("bb_l", line_set, material)
-
-
-
+image_with_bb(corners,material)
 #Plot 
 img_o3d = render.render_to_image()
 img_cv2 = cv2.cvtColor(np.array(img_o3d), cv2.COLOR_RGBA2BGRA)
