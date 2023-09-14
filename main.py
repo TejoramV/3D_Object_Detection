@@ -30,7 +30,6 @@ center = [0, 0, 0]
 eye = [0, 0, 1]  
 up = [0, 1, 0] 
 render.scene.camera.look_at(center, eye, up)
-
 object_center = mesh_s.get_center()[0]
 #Translate by 5cm in image plane
 t1, t2, t3 = (np.random.uniform(object_center-0.025,object_center+0.025),np.random.uniform(object_center-0.025,object_center+0.025),np.random.uniform(object_center-0.025,object_center+0.025))
@@ -49,7 +48,7 @@ print(f't1, t2, t3: {t1, t2, t3}')
 
 #Translate and rotate the bounding box
 
-Rotation_matrix = mesh.get_rotation_matrix_from_xyz((x0,y0,z0))
+R = mesh.get_rotation_matrix_from_xyz((x0,y0,z0))
 obj_mesh = trimesh.load_mesh(f'/home/weirdlab/Downloads/open/scissors.obj')
 bb_min_xyz = obj_mesh.bounds[0].copy()
 bb_max_xyz = obj_mesh.bounds[1].copy()
@@ -69,13 +68,24 @@ combinations = list(itertools.product([xmin, xmax],
 for combo in combinations:
     corners.append(list(combo))
 
+x_center = mesh_tx.get_center()[0]
+y_center = mesh_tx.get_center()[1]
+z_center = mesh_tx.get_center()[2]
+
+transformation_matrix = np.array([
+    [R[0, 0], R[0, 1], R[0, 2], x_center],
+    [R[1, 0], R[1, 1], R[1, 2], y_center],
+    [R[2, 0], R[2, 1], R[2, 2], z_center],
+    [0,       0,       0,      1   ]
+])
+
 
 for i in range(8):
     x= corners[i][0] 
     y= corners[i][1] 
     z = corners[i][2]
-    data_matrix = np.array([[x], [y], [z]])
-    bb_xyz = np.matmul(Rotation_matrix,data_matrix)
+    data_matrix = np.array([[x], [y], [z], [1]])
+    bb_xyz = np.matmul(transformation_matrix,data_matrix)
     corners[i][0] = bb_xyz[0][0]
     corners[i][1] = bb_xyz[1][0]
     corners[i][2] = bb_xyz[2][0]
