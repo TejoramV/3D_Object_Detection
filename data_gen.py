@@ -130,8 +130,7 @@ for i in range(8):
     corners[i][2] = bb_xyz[2][0]
 
 #print(corners)
-
-
+flattened_corners = [val for sublist in corners for val in sublist]
 
 #adding bounding box to image
 if bbox_flag:
@@ -143,4 +142,4 @@ img_o3d = render.render_to_image()
 # cv2.waitKey()
 
 o3d.io.write_image("images/{}.png".format(iteration_number), img_o3d, 9)
-np.savez("bounding_box/{}.npz".format(iteration_number), corners)
+np.savez("bounding_box/{}.npz".format(iteration_number), np.array(flattened_corners))
