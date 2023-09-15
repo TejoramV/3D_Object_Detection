@@ -42,8 +42,7 @@ Due to size constrain, only sample data are uploaded here. Full dataset is hoste
 A naive CNN network was trained on the above generated image and data points.
 + The code for network training is in `cnn.py`
 + `plot_result.py` code visualizes and saves predicted bounding boxes from cnn and results are in sample folder.
-![]([https://github.com/TejoramV/3D_Object_Detection/blob/main/ezgif-5-5e81d69082.gif](https://github.com/TejoramV/3D_Object_Detection/blob/main/final_output.gif))
-
+![](https://github.com/TejoramV/3D_Object_Detection/blob/main/final_output.gif)
 #### Performance metrics:
 + accuracy:0.535
 + best_epoch:5
