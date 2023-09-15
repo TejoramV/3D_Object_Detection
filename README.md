@@ -5,7 +5,9 @@ The problem of generating 3D bounding box can be broken down into three mileston
 2. Generate ground truth Bounding boxes
 3. Train a CNN to predict 8 corners  
 ```
-![](https://github.com/TejoramV/3D_Object_Detection/blob/main/ezgif-5-5e81d69082.gif)
+<p align="center">
+  <img src="https://github.com/TejoramV/3D_Object_Detection/blob/main/ezgif-5-5e81d69082.gif" alt="animated" />
+</p>
 
 # Directory:
 ```bash
@@ -42,7 +44,11 @@ Due to size constrain, only sample data are uploaded here. Full dataset is hoste
 A naive CNN network was trained on the above generated image and data points.
 + The code for network training is in `cnn.py`
 + `plot_result.py` code visualizes and saves predicted bounding boxes from cnn and results are in sample folder.
-![](https://github.com/TejoramV/3D_Object_Detection/blob/main/final_output.gif)
+
+<p align="center">
+  <img src="https://github.com/TejoramV/3D_Object_Detection/blob/main/final_output.gif" alt="animated" />
+</p>
+
 #### Performance metrics:
 + accuracy:0.535
 + best_epoch:5
