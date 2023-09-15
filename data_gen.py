@@ -7,64 +7,39 @@ import trimesh
 import json
 import argparse
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--iteration', type=int, required=True)
-parser.add_argument('--bounding_box_visualization', type=str, required=False)
-args = parser.parse_args()
-iteration_number = args.iteration
-bbox_flag = args.bounding_box_visualization.lower() =='true'
+def set_camera(object_file_path, camera_file_path):
 
-with open('camera.json', 'r') as camera_file:
-    camera_params = json.load(camera_file)
-object_file = "scissors.obj"
-width=camera_params["width"]
-height=camera_params["height"]
-fx=camera_params["fx"]
-fy=camera_params["fy"]
-cx=camera_params["cx"]
-cy=camera_params["cy"]
+    with open(camera_file_path, 'r') as camera_file:
+        camera_params = json.load(camera_file)
 
-#Setting up scene
-render = o3d.visualization.rendering.OffscreenRenderer(width, height)
-mesh = o3d.geometry.TriangleMesh.create_coordinate_frame()
-material = o3d.visualization.rendering.MaterialRecord()  
-mesh_s = o3d.io.read_triangle_mesh(object_file)
-render.scene.set_background([0.1, 0.2, 0.3, 1.0]) 
-render.scene.set_lighting(render.scene.LightingProfile.NO_SHADOWS, (0, 0, 0))
+    width=camera_params["width"]
+    height=camera_params["height"]
+    fx=camera_params["fx"]
+    fy=camera_params["fy"]
+    cx=camera_params["cx"]
+    cy=camera_params["cy"]
 
-#Setting up camera
-near_plane = 0.1
-far_plane = 50.0
-intrinsic = o3d.camera.PinholeCameraIntrinsic(width, height, fx,fy, cx, cy)
-render.scene.camera.set_projection(intrinsic.intrinsic_matrix, near_plane, far_plane, width, height)
-center = [0, 0, 0]  
-eye = [0, 0, 1]  
-up = [0, 1, 0] 
-render.scene.camera.look_at(center, eye, up)
-object_center = mesh_s.get_center()[0]
+    #Setting up scene
+    render = o3d.visualization.rendering.OffscreenRenderer(width, height)
+    mesh = o3d.geometry.TriangleMesh.create_coordinate_frame()
+    mesh_s = o3d.io.read_triangle_mesh(object_file_path)
+    render.scene.set_background([0.1, 0.2, 0.3, 1.0]) 
+    render.scene.set_lighting(render.scene.LightingProfile.NO_SHADOWS, (0, 0, 0))
 
-#Generating bounding box
-obj_mesh = trimesh.load_mesh(object_file)
-bb_min_xyz = obj_mesh.bounds[0].copy()
-bb_max_xyz = obj_mesh.bounds[1].copy()
-xmin = bb_min_xyz[0]
-ymin = bb_min_xyz[1]
-zmin = bb_min_xyz[2]
-xmax = bb_max_xyz[0]
-ymax = bb_max_xyz[1]
-zmax = bb_max_xyz[2]
+    #Setting up camera
+    near_plane = 0.1
+    far_plane = 50.0
+    intrinsic = o3d.camera.PinholeCameraIntrinsic(width, height, fx,fy, cx, cy)
+    render.scene.camera.set_projection(intrinsic.intrinsic_matrix, near_plane, far_plane, width, height)
+    center = [0, 0, 0]  
+    eye = [0, 0, 1]  
+    up = [0, 1, 0] 
+    render.scene.camera.look_at(center, eye, up)
+    object_center = mesh_s.get_center()[0]
 
-#Generating corners
-corners = []
-combinations = list(itertools.product([xmin, xmax], 
-                                       [ymin, ymax], 
-                                       [zmin, zmax]))
+    return render, object_center, mesh, mesh_s
 
-for combo in combinations:
-    corners.append(list(combo))
-
-
-def image_with_bb(corners,material):
+def image_with_bb(corners,material,render):
 
     lines = [
     [0, 1],
@@ -93,8 +68,40 @@ def image_with_bb(corners,material):
     point_cloud2.paint_uniform_color([0, 1, 0])
 
     render.scene.add_geometry("bb_p", point_cloud2, material)
-    render.scene.add_geometry("bb_l", line_set, material)    
+    render.scene.add_geometry("bb_l", line_set, material)  
+    return render  
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--iteration', type=int, required=False, default= 0)
+parser.add_argument('--bounding_box_visualization', type=str, required=False, default="False")
+args = parser.parse_args()
+iteration_number = args.iteration
+bbox_flag = args.bounding_box_visualization.lower() =='true'
+object_file_path = "scissors.obj"
+camera_file_path = "camera.json"
+
+render, object_center, mesh, mesh_s = set_camera(object_file_path, camera_file_path)
+material = o3d.visualization.rendering.MaterialRecord()  
+
+#Generating bounding box
+obj_mesh = trimesh.load_mesh(object_file_path)
+bb_min_xyz = obj_mesh.bounds[0].copy()
+bb_max_xyz = obj_mesh.bounds[1].copy()
+xmin = bb_min_xyz[0]
+ymin = bb_min_xyz[1]
+zmin = bb_min_xyz[2]
+xmax = bb_max_xyz[0]
+ymax = bb_max_xyz[1]
+zmax = bb_max_xyz[2]
+
+#Generating corners
+corners = []
+combinations = list(itertools.product([xmin, xmax], 
+                                       [ymin, ymax], 
+                                       [zmin, zmax]))
+
+for combo in combinations:
+    corners.append(list(combo))
 
 #Translate by 5cm in image plane
 t1, t2, t3 = (np.random.uniform(object_center-0.025,object_center+0.025),np.random.uniform(object_center-0.025,object_center+0.025),np.random.uniform(object_center-0.025,object_center+0.025))
@@ -129,12 +136,11 @@ for i in range(8):
     corners[i][1] = bb_xyz[1][0]
     corners[i][2] = bb_xyz[2][0]
 
-#print(corners)
 flattened_corners = [val for sublist in corners for val in sublist]
 
 #adding bounding box to image
 if bbox_flag:
-    image_with_bb(corners,material)
+    render = image_with_bb(corners,material)
 img_o3d = render.render_to_image()
 
 # img_cv2 = cv2.cvtColor(np.array(img_o3d), cv2.COLOR_RGBA2BGRA)
@@ -143,3 +149,4 @@ img_o3d = render.render_to_image()
 
 o3d.io.write_image("images/{}.png".format(iteration_number), img_o3d, 9)
 np.savez("bounding_box/{}.npz".format(iteration_number), np.array(flattened_corners))
+
