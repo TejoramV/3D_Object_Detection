@@ -40,4 +40,13 @@ A naive CNN network was trained on the above generated image and data points.
 + The code for network training is in `cnn.py`
 
 #### Performance metrics:
-+
++ accuracy:0.535
++ best_epoch:5
++ best_val_loss:0.00316
++ epoch:29
++ explained_variance_score:0.28253
++ loss:0.00024
++ r2_score:0.28109
++ val_accuracy:0.195
++ val_loss:0.00329
+Full training logs and graphs are available in [this wandb link](https://wandb.ai/tejoram_vivekanandan/3D_Corner_Detection_CNN?workspace=user-tejoram_vivekanandan)
