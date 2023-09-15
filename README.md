@@ -5,4 +5,4 @@ The problem of generating 3D bounding box can be broken down into three mileston
 2. Generate ground truth Bounding boxes
 3. Train a CNN to predict 8 corners  
 ```
-
+![](https://github.com/TejoramV/3D_Object_Detection/blob/main/ezgif-5-5e81d69082.gif)
