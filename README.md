@@ -49,4 +49,4 @@ A naive CNN network was trained on the above generated image and data points.
 + r2_score:0.28109
 + val_accuracy:0.195
 + val_loss:0.00329
-Full training logs and graphs are available in [this wandb link](https://wandb.ai/tejoram_vivekanandan/3D_Corner_Detection_CNN?workspace=user-tejoram_vivekanandan)
++ Full training logs and graphs are available in [this wandb link](https://wandb.ai/tejoram_vivekanandan/3D_Corner_Detection_CNN?workspace=user-tejoram_vivekanandan).
