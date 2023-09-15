@@ -27,3 +27,4 @@ The problem of generating 3D bounding box can be broken down into three mileston
 └── camera.json
 └── scissors.obj
 ```
+Due to size constrain, only sample data are uploaded here. Full dataset is hosted in this [this gdrive link.](https://drive.google.com/drive/folders/1jEBK0gtiQX9h6plHwfHp1bG_G2e3y1cH?usp=sharing)
